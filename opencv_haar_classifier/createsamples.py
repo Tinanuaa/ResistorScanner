@@ -15,50 +15,43 @@ import sys
 #########################################################################
 cmd = 'C:\\OpenCV\opencv\\build\\x64\\vc14\\bin\\opencv_createsamples.exe -bgcolor 0 -bgthresh 0 -maxxangle 1.1 -maxyangle 1.1 maxzangle 0.5 -maxidev 40 -w 20 -h 20';
 totalnum = 1500;
-tmpfile  = 'tmp';
+tmpfile  = 'tmp.txt';
 
 parser = argparse.ArgumentParser(description='using opencv_createsamples to create multiple samples')
-parser.add_argument('-pos', help='txt file name which contains the positive file names',required = True)
-parser.add_argument('-neg', help='txt file name which contains the negative file names',required=True)
-parser.add_argument('-vec', help='vec file output dir',required=True)
+parser.add_argument('-dir', help='dir for the negative,positive and vec output folder',required = True)
+#parser.add_argument('-pos_dir', help='txt file name which contains the positive file names',required = True)
+parser.add_argument('-pos', help='folder name which contains the positive files',required = True)
+parser.add_argument('-neg', help='folder name which contains the negative file names',required=True)
+parser.add_argument('-vec', help='vec file output folder name',required=True)
+parser.add_argument('-totalnum', help='totalnum for the vec',required=False)
 args = parser.parse_args()
 
-print args
 
-#if (len(len(sys.argv)) < 3):
-#    print "Usage: python createtrainsamples.py\n";
-#    print "  <positives_collection_filename>\n";
-#    print "  <negatives_collection_filename>\n";
-#    print "  <output_dirname>\n";
-#    exit();
+parent_dir = args.dir
+positive_dir  = os.path.join(parent_dir,args.pos);
+negative_dir  = os.path.join(parent_dir,args.neg);
+output_dir = os.path.join(parent_dir,args.vec);
+totalnum     = int(args.totalnum )
 
-positive  = args.pos;
-negative  = args.neg;
-outputdir = args.vec;
-#if (len(args) > 2):
-#	totalnum     = args[3] 
-#$cmd          = argx[4] if (len(args) > 3);
+positives = []
+negatives = []
 
-with open(positive,'r') as pos:
-	positives = pos.readlines()
-print positives
-with open(negative,'r') as neg:
-	negatives = neg.readlines()
-#open(POSITIVE, "< $positive");
-#my @positives = <POSITIVE>;
-#close(POSITIVE);
+for file in os.listdir(positive_dir):
+	#if file.endswith(".txt"):
+	#print file
+	if file.upper().endswith("JPG") or file.upper().endswith("JPEG"):
+		positives.append(os.path.join(positive_dir,file))
 
-#open(NEGATIVE, "< $negative");
-#my @negatives = <NEGATIVE>;
-#close(NEGATIVE);
+for file in os.listdir(negative_dir):
+	if file.upper().endswith("JPG") or file.upper().endswith("JPEG"):
+		negatives.append(os.path.join(negative_dir,file))
+	    
 
 # number of generated images from one image so that total will be $totalnum
 numfloor  = int(totalnum / len(positives));
 numremain = totalnum - numfloor * len(positives);
 
-# Get the directory name of positives
-imgdir = positives[0];
-imgdirlen = len(imgdir);
+imgdirlen = len(positive_dir);
 
 for k in range(0,len(positives)):
     img = positives[k];
@@ -73,17 +66,13 @@ for k in range(0,len(positives)):
     #write_to_tmp(localnegatives)
     with open(tmpfile, "wb") as text_file:
     	for item in localnegatives:
+            text_file.write(item)
+            text_file.write("\r\n")
+  			#print>>text_file, item+"\n"
+  			#print item
 
-  			print>>text_file, item
-  			print item
-
-    #open(TMP, "> $tmpfile");
-    #print TMP @localnegatives;
-    #close(TMP);
-    #system("cat $tmpfile");
-
-    #!chomp($img);
-    vec = "C:\\Users\\tingt\\Desktop\\Resistor\\opencv-haar-classifier-training\\samples\\samples.vec"#outputdir+substr(img, imgdirlen) +".vec" ;
-    print "{cmd} -img {img} -bg {tmpfile} -vec {vec} -num {num}".format(cmd=cmd,img= img,tmpfile = negative,vec=vec,num=num)
-    os.system("{cmd} -img {img} -bg {tmpfile} -vec {vec} -num {num}".format(cmd=cmd,img= img,tmpfile = negative,vec=vec,num=num));
+    vec = os.path.join(output_dir,img[imgdirlen+1:].split('.')[0]+".vec")
+    #print output_dir,vec
+    print "{cmd} -img {img} -bg {tmpfile} -vec {vec} -num {num}".format(cmd=cmd,img= img,tmpfile = tmpfile,vec=vec,num=num)
+    os.system("{cmd} -img {img} -bg {tmpfile} -vec {vec} -num {num}".format(cmd=cmd,img= img,tmpfile = tmpfile,vec=vec,num=num));
 #unlink($tmpfile);
