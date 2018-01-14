@@ -13,7 +13,7 @@ import sys
 # Author: Tina Feng 
 # Date  : 1/1/2018
 #########################################################################
-cmd = 'C:\\OpenCV\opencv\\build\\x64\\vc14\\bin\\opencv_createsamples.exe -bgcolor 0 -bgthresh 0 -maxxangle 1.1 -maxyangle 1.1 maxzangle 0.5 -maxidev 40 -w 20 -h 20';
+cmd = 'C:\\OpenCV\opencv\\build\\x64\\vc14\\bin\\opencv_createsamples.exe -bgcolor 0 -bgthresh 0 -maxxangle 1.1 -maxyangle 1.1 maxzangle 0.5 -maxidev 40 -w 80 -h 20'
 totalnum = 1500;
 tmpfile  = 'tmp.txt';
 
@@ -24,6 +24,7 @@ parser.add_argument('-pos', help='folder name which contains the positive files'
 parser.add_argument('-neg', help='folder name which contains the negative file names',required=True)
 parser.add_argument('-vec', help='vec file output folder name',required=True)
 parser.add_argument('-totalnum', help='totalnum for the vec',required=False)
+parser.add_argument('-cmd', help='the command for creating samples:opencv_createsamples.exe -bgcolor 0 -bgthresh 0 -maxxangle 1.1 -maxyangle 1.1 maxzangle 0.5 -maxidev 40 -w 80 -h 20',required=False)
 args = parser.parse_args()
 
 
@@ -32,7 +33,9 @@ positive_dir  = os.path.join(parent_dir,args.pos);
 negative_dir  = os.path.join(parent_dir,args.neg);
 output_dir = os.path.join(parent_dir,args.vec);
 totalnum     = int(args.totalnum )
-
+if args.cmd is not None:
+	cmd = args.cmd
+	print cmd
 positives = []
 negatives = []
 
@@ -46,7 +49,15 @@ for file in os.listdir(negative_dir):
 	if file.upper().endswith("JPG") or file.upper().endswith("JPEG"):
 		negatives.append(os.path.join(negative_dir,file))
 	    
+with open(os.path.join(parent_dir,"negative.txt"), "wb") as text_file:
+	for item in negatives:
+		text_file.write(item)
+		text_file.write("\r\n")
 
+with open(os.path.join(parent_dir,"positive.txt"), "wb") as text_file:
+	for item in positives:
+		text_file.write(item)
+		text_file.write("\r\n")
 # number of generated images from one image so that total will be $totalnum
 numfloor  = int(totalnum / len(positives));
 numremain = totalnum - numfloor * len(positives);
